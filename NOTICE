@@ -1,0 +1,8 @@
+This crate (zimtohrli-sys) provides Rust FFI bindings to the upstream Zimtohrli psychoacoustic perceptual audio metric library.
+
+It vendors the upstream header:
+  - vendor/zimtohrli.h
+  - Source: https://github.com/google/zimtohrli
+  - Exact version: see vendor/ZIMTOHRLI_VERSION
+
+The vendored upstream code is licensed under the Apache License 2.0 and retains its original copyright and license notices.
