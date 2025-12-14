@@ -1,0 +1,12 @@
+# Zimtohrli Vendor Information
+#
+# This file tracks the exact version of the vendored zimtohrli source.
+
+source: https://github.com/google/zimtohrli
+commit: 03925c3288f2b03f3b32a3ac75c270156abff906
+date: 2025-10-03
+file: cpp/zimt/zimtohrli.h
+url: https://raw.githubusercontent.com/google/zimtohrli/03925c3288f2b03f3b32a3ac75c270156abff906/cpp/zimt/zimtohrli.h
+
+# To update, download the new header and update this file:
+# curl -o vendor/zimtohrli.h https://raw.githubusercontent.com/google/zimtohrli/<NEW_COMMIT>/cpp/zimt/zimtohrli.h

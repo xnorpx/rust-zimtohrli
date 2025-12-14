@@ -1,0 +1,33 @@
+[package]
+name = "zimtohrli-sys"
+version = "0.1.0"
+edition = "2021"
+authors = ["Marcus Asteborg <xnorpx@outlook.com>"]
+license = "Apache-2.0"
+description = "Rust FFI bindings to the Zimtohrli psychoacoustic audio metric"
+repository = "https://github.com/xnorpx/rust-zimtohrli"
+homepage = "https://github.com/xnorpx/rust-zimtohrli"
+documentation = "https://docs.rs/zimtohrli-sys"
+readme = "README.md"
+keywords = ["audio", "psychoacoustic", "metric", "ffi"]
+categories = ["external-ffi-bindings", "multimedia::audio"]
+include = [
+    "src/**/*",
+    "vendor/**/*",
+    "build.rs",
+    "Cargo.toml",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+]
+
+[features]
+# Enables compiler fast-math flags (may change numerical results).
+default = ["fast-math"]
+fast-math = []
+
+[dependencies]
+cxx = "1"
+
+[build-dependencies]
+cxx-build = "1"

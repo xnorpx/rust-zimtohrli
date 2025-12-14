@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly to catch upstream changes
+    - cron: '0 0 * * 0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Check if vendored header is up to date with upstream
+  check-vendor:
+    name: Check Vendored Header
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download upstream header
+        run: |
+          # Read the commit from ZIMTOHRLI_VERSION file
+          COMMIT=$(grep '^commit:' vendor/ZIMTOHRLI_VERSION | cut -d' ' -f2)
+          echo "Vendored commit: $COMMIT"
+          
+          # Download the header from that specific commit
+          curl -sSL "https://raw.githubusercontent.com/google/zimtohrli/${COMMIT}/cpp/zimt/zimtohrli.h" -o /tmp/vendored_commit.h
+          
+          # Download the latest header from main
+          curl -sSL "https://raw.githubusercontent.com/google/zimtohrli/main/cpp/zimt/zimtohrli.h" -o /tmp/upstream_latest.h
+
+      - name: Verify vendored header matches commit
+        run: |
+          if ! diff -q vendor/zimtohrli.h /tmp/vendored_commit.h > /dev/null 2>&1; then
+            echo "::error::Vendored header does not match the commit specified in ZIMTOHRLI_VERSION file!"
+            diff vendor/zimtohrli.h /tmp/vendored_commit.h || true
+            exit 1
+          fi
+          echo "✓ Vendored header matches the specified commit"
+
+      - name: Check for upstream updates
+        run: |
+          if ! diff -q vendor/zimtohrli.h /tmp/upstream_latest.h > /dev/null 2>&1; then
+            echo "::warning::Upstream zimtohrli.h has been updated! Consider updating the vendored header."
+            echo ""
+            echo "To update, run:"
+            echo "  curl -o vendor/zimtohrli.h https://raw.githubusercontent.com/google/zimtohrli/main/cpp/zimt/zimtohrli.h"
+            echo "  # Then update vendor/ZIMTOHRLI_VERSION with the new commit hash"
+          else
+            echo "✓ Vendored header is up to date with upstream main"
+          fi
+
+  # Build and test on multiple platforms
+  test:
+    name: Test ${{ matrix.os }} (${{ matrix.rust }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            rust: beta
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            rust: nightly
+            target: x86_64-unknown-linux-gnu
+          
+          # Windows
+          - os: windows-latest
+            rust: stable
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            rust: stable
+            target: i686-pc-windows-msvc
+          - os: windows-latest
+            rust: stable
+            target: aarch64-pc-windows-msvc
+          
+          # macOS
+          - os: macos-latest
+            rust: stable
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            rust: stable
+            target: aarch64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --target ${{ matrix.target }} --verbose
+
+      - name: Run tests
+        # Only run tests on native targets (not cross-compiled)
+        if: |
+          (matrix.os == 'ubuntu-latest' && matrix.target == 'x86_64-unknown-linux-gnu') ||
+          (matrix.os == 'windows-latest' && matrix.target == 'x86_64-pc-windows-msvc') ||
+          (matrix.os == 'macos-latest' && matrix.target == 'x86_64-apple-darwin') ||
+          (matrix.os == 'macos-latest' && matrix.target == 'aarch64-apple-darwin')
+        run: cargo test --target ${{ matrix.target }} --verbose
+
+  # Formatting and lints
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+  # Documentation
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build docs
+        run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
