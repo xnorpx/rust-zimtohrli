@@ -1,6 +1,6 @@
 [package]
 name = "zimtohrli-sys"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Marcus Asteborg <xnorpx@outlook.com>"]
 license = "Apache-2.0"
@@ -12,13 +12,13 @@ readme = "README.md"
 keywords = ["audio", "psychoacoustic", "metric", "ffi"]
 categories = ["external-ffi-bindings", "multimedia::audio"]
 include = [
-    "src/**/*",
-    "vendor/**/*",
-    "build.rs",
-    "Cargo.toml",
-    "LICENSE",
-    "NOTICE",
-    "README.md",
+  "src/**/*",
+  "vendor/**/*",
+  "build.rs",
+  "Cargo.toml",
+  "LICENSE",
+  "NOTICE",
+  "README.md",
 ]
 
 [features]
