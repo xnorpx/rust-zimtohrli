@@ -12,7 +12,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zimtohrli-sys = "0.1"
+zimtohrli-sys = "0.2"
 ```
 
 ### Example
